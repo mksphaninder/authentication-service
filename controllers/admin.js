@@ -1,32 +1,45 @@
 const User = require("../models/User");
 const { validationResult } = require("express-validator/check");
 const bcrypt = require("bcryptjs");
+const jwt = require('jsonwebtoken');
 
 exports.authenticate = (req, res, next) => {
   const username = req.body.username;
-  const email = req.body.email;
-  const dob = req.body.dob;
   const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
-
   User.findOne({
     where: {
-      email: email,
+      username: username,
     },
   })
     .then((user) => {
-      if (user) {
-        return res.status(405).json({
-          message: "Email already exists",
-        });
+      if (!user) {
+        const error = new Error('username not found');
+        error.statusCode = 401;
+        throw error;
       }
+      loadedUser = user;
+      return bcrypt.compare(password, user.password);
     })
-    .catch((err) => console.log(err));
+    .then(isEqual => {
+      if(!isEqual) {
+        const error = new Error('wrong password')
+        error.statusCode = 401;
+        throw error;
+      }
+      const token = jwt.sign({
+        email: loadedUser.email,
+        userId: loadedUser.id
+      }, 'topsecretstring', { expiresIn: '1h'});
+      res.status(200).json({ token: token, userId: loadedUser.id.toString() });
+    })
+    .catch((err) => {
+      if(!err.statusCode)
+      {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 };
-
-exports.showSignup = (req, res) => {
-    res.status(200).json({message: "working"});
-}
 
 exports.signup = (req, res, next) => {
   const errors = validationResult(req);
@@ -50,13 +63,11 @@ exports.signup = (req, res, next) => {
         password: hashedPassword,
       });
     })
-    .then(user => {
-        console.log('here');
-        console.log(user);
-        res.status(201).json(user);
+    .then((user) => {
+      res.status(201).json(user);
     })
     .catch((err) => {
-        console.log(err);
+      console.log(err);
       if (!err.statusCode) {
         err.statusCode = 500;
       }

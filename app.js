@@ -1,29 +1,21 @@
 const express = require("express");
 const sequelize = require("./util/database");
 const bodyParser = require("body-parser");
-const session = require("express-session");
 const adminRoutes = require("./routes/admin");
+const projectRoutes = require('./routes/project');
 
 const app = express();
 
 app.use(bodyParser.json());
-// app.use(
-//   session({
-//     secret: "TzLw_t6/)6p:Wuzz",
-//     resave: false,
-//     saveUninitialized: false,
-//   })
-// );
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
-app.get('/', (req, res) => {
-  res.send('hello')
-})
+
 app.use("/auth", adminRoutes);
+app.use('/', projectRoutes);
 app.use((err, req, res, next)=> {
   console.log(err);
   const status = err.statusCode || 500;
