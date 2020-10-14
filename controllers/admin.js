@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const { validationResult } = require("express-validator/check");
 const bcrypt = require("bcryptjs");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
 exports.authenticate = (req, res, next) => {
   const username = req.body.username;
@@ -13,28 +13,31 @@ exports.authenticate = (req, res, next) => {
   })
     .then((user) => {
       if (!user) {
-        const error = new Error('username not found');
+        const error = new Error("username not found");
         error.statusCode = 401;
         throw error;
       }
       loadedUser = user;
       return bcrypt.compare(password, user.password);
     })
-    .then(isEqual => {
-      if(!isEqual) {
-        const error = new Error('wrong password')
+    .then((isEqual) => {
+      if (!isEqual) {
+        const error = new Error("wrong password");
         error.statusCode = 401;
         throw error;
       }
-      const token = jwt.sign({
-        email: loadedUser.email,
-        userId: loadedUser.id
-      }, 'topsecretstring', { expiresIn: '1h'});
+      const token = jwt.sign(
+        {
+          email: loadedUser.email,
+          userId: loadedUser.id,
+        },
+        "topsecretstring",
+        { expiresIn: "1h" }
+      );
       res.status(200).json({ token: token, userId: loadedUser.id.toString() });
     })
     .catch((err) => {
-      if(!err.statusCode)
-      {
+      if (!err.statusCode) {
         err.statusCode = 500;
       }
       next(err);
@@ -75,4 +78,29 @@ exports.signup = (req, res, next) => {
     });
 };
 
+exports.isAuthenticated = (req, res) => {
+  res.status(200).json();
+};
+
 exports.changePassword = (req, res, next) => {};
+
+exports.getUserDetails = (req, res, next) => {
+  const userId = req.params.id;
+  User.findOne({
+    where: {
+      id: userId,
+    },
+  })
+    .then((user) => {
+      if (!user) {
+        const error = new Error("User not found");
+        error.statusCode = 404;
+        throw error;
+      }
+      res.status(200).json({
+        id: user.id,
+        username: user.username,
+      });
+    })
+    .catch();
+};

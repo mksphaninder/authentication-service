@@ -1,10 +1,10 @@
 const axios = require("axios");
 
 exports.showProjects = (req, res, next) => {
+  console.log("showProjects");
   axios
     .get(`http://localhost:8080/users/${req.params.userId}/projects`)
     .then((response) => {
-      // console.log(response);
       res.statusCode = response.status;
       res.json(response.data);
     })
@@ -49,7 +49,7 @@ exports.editProject = (req, res, next) => {
 };
 
 exports.removeProject = (req, res, next) => {
-    axios
+  axios
     .delete(
       `http://localhost:8080/users/${req.params.userId}/projects/${req.params.projectId}`
     )
@@ -65,10 +65,11 @@ exports.removeProject = (req, res, next) => {
 };
 
 exports.showTasks = (req, res, next) => {
-    axios
-    .get(
-      `http://localhost:8080/users/${req.params.userId}/projects/${req.params.projectId}/tasks`
-    )
+  let url = `http://localhost:8080/users/${req.params.userId}/projects/${req.params.projectId}/tasks`;
+  axios
+    .get(url, {
+      params: req.query.params,
+    })
     .then((response) => {
       res.statusCode = response.status;
       res.json(response.data);
@@ -78,12 +79,13 @@ exports.showTasks = (req, res, next) => {
       res.statusCode = err.response.status;
       res.json(err.response.data);
     });
-}
+};
 
 exports.addTasks = (req, res, next) => {
-    axios
+  axios
     .post(
-      `http://localhost:8080/users/${req.params.userId}/projects/${req.params.projectId}/tasks`, req.body
+      `http://localhost:8080/users/${req.params.userId}/projects/${req.params.projectId}/tasks`,
+      req.body
     )
     .then((response) => {
       res.statusCode = response.status;
@@ -94,34 +96,37 @@ exports.addTasks = (req, res, next) => {
       res.statusCode = err.response.status;
       res.json(err.response.data);
     });
-}
+};
 
 exports.editTasks = (req, res, next) => {
   axios
-  .put(
-    `http://localhost:8080/users/${req.params.userId}/projects/${req.params.projectId}/tasks/${req.params.taskId}`, req.body
-  )
-  .then((response) => {
-    res.statusCode = response.status;
-    res.json(response.data);
-  })
-  .catch((err) => {
-    console.log(err);
-    res.statusCode = err.response.status;
-    res.json(err.response.data);
-  });
-}
+    .put(
+      `http://localhost:8080/users/${req.params.userId}/projects/${req.params.projectId}/tasks/${req.params.taskId}`,
+      req.body
+    )
+    .then((response) => {
+      res.statusCode = response.status;
+      res.json(response.data);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.statusCode = err.response.status;
+      res.json(err.response.data);
+    });
+};
 
 exports.removeTasks = (req, res, next) => {
   axios
-  .delete(`http://localhost:8080/users/${req.params.userId}/projects/${req.params.projectId}/tasks/${req.params.taskId}`)
-  .then((response) => {
-    res.statusCode = response.status;
-    res.json(response.data);
-  })
-  .catch((err) => {
-    console.log(err);
-    res.statusCode = err.response.status;
-    res.json(err.response.data);
-  });
-}
+    .delete(
+      `http://localhost:8080/users/${req.params.userId}/projects/${req.params.projectId}/tasks/${req.params.taskId}`
+    )
+    .then((response) => {
+      res.statusCode = response.status;
+      res.json(response.data);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.statusCode = err.response.status;
+      res.json(err.response.data);
+    });
+};
